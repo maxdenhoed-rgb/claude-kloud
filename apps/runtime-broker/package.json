@@ -1,8 +1,8 @@
 {
-  "name": "@claudekloud/proxy",
+  "name": "@claudekloud/runtime-broker",
   "version": "0.0.1",
   "private": true,
-  "description": "Hono proxy that brokers Claude API calls behind session tokens",
+  "description": "Local runtime broker: boots lab containers, mints session tokens, proxies WebSocket PTY",
   "license": "UNLICENSED",
   "type": "module",
   "main": "./dist/server.js",
@@ -15,19 +15,19 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@claudekloud/db": "workspace:*",
     "@claudekloud/session-token": "workspace:*",
     "@hono/node-server": "1.13.7",
     "@hono/zod-validator": "0.4.3",
-    "drizzle-orm": "0.38.3",
+    "dockerode": "4.0.4",
     "hono": "4.6.20",
     "pino": "9.5.0",
+    "ws": "8.18.0",
     "zod": "3.24.1"
   },
   "devDependencies": {
+    "@types/dockerode": "3.3.38",
     "@types/node": "22.10.2",
-    "jose": "5.10.0",
-    "msw": "2.6.6",
+    "@types/ws": "8.5.13",
     "tsx": "4.19.2",
     "typescript": "5.7.3",
     "vitest": "2.1.8"

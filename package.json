@@ -17,7 +17,10 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,yml,yaml}\"",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "prepare": "husky || true"
+    "prepare": "husky || true",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:push": "pnpm --filter @claudekloud/db db:push"
   },
   "devDependencies": {
     "@commitlint/cli": "19.6.1",

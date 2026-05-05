@@ -1,0 +1,12 @@
+{
+  "name": "claudekloud-lab-image",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dependency manifest for the ClaudeKloud lab container image.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.93.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
