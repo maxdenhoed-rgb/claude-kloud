@@ -44,8 +44,8 @@ async function buildTestApp() {
   const { loadEnv } = await import('../lib/env.js');
   loadEnv();
   const { createApp, LISTENER_INTERFACE_HEADER } = await import('../app.js');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const app = createApp({ db: makeMockDb() as any });
+  // @ts-expect-error: makeMockDb returns a partial DbClient surface — gate tests never touch real DB calls
+  const app = createApp({ db: makeMockDb() });
   return { app, LISTENER_INTERFACE_HEADER };
 }
 
