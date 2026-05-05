@@ -51,27 +51,48 @@ docker build -t lab-base:local infra/lab-image
 Required once after checkout and again whenever `infra/lab-image/` changes
 (Dockerfile, requirements.txt, package-lock.json).
 
-### 5. Configure the proxy
+### 5. Configure the proxy and broker
 
 ```sh
 cp apps/proxy/.env.example apps/proxy/.env.local
+cp apps/runtime-broker/.env.example apps/runtime-broker/.env.local
 ```
+
+Both files are auto-loaded by their dev scripts via Node's
+`--env-file-if-exists` flag (Node 22.13+). No manual `source` needed.
 
 Open `apps/proxy/.env.local` and fill in:
 
 | Variable                  | Value                                                       |
 | ------------------------- | ----------------------------------------------------------- |
-| `ANTHROPIC_API_KEY`       | A real Anthropic API key                                    |
+| `ANTHROPIC_API_KEY`       | A real Anthropic API key from console.anthropic.com         |
 | `DATABASE_URL`            | `postgresql://postgres:postgres@localhost:5432/claudekloud` |
 | `SESSION_SIGNING_SECRET`  | Random string, 32+ chars. Must match the broker's copy.     |
 | `INTERNAL_WEBHOOK_SECRET` | Random string, 32+ chars. Must match the broker's copy.     |
 
-`SESSION_SIGNING_SECRET` and `INTERNAL_WEBHOOK_SECRET` are shared between the
-proxy and the runtime-broker. Generate them once (`openssl rand -hex 32`) and
-set the same value in both `.env.local` files. Never commit either file.
+Open `apps/runtime-broker/.env.local` and fill in:
 
-When the broker lands it will have its own `.env.example`; copy and fill that
-with the same values.
+| Variable                  | Value                                         |
+| ------------------------- | --------------------------------------------- |
+| `SESSION_SIGNING_SECRET`  | **Same value** as in `apps/proxy/.env.local`. |
+| `INTERNAL_WEBHOOK_SECRET` | **Same value** as in `apps/proxy/.env.local`. |
+
+Generate the shared secrets once with `openssl rand -hex 32` and paste the
+same value into both files. Never commit either `.env.local`.
+
+Quick one-shot setup:
+
+```sh
+SECRET_SESSION=$(openssl rand -hex 32)
+SECRET_WEBHOOK=$(openssl rand -hex 32)
+echo "SESSION_SIGNING_SECRET=$SECRET_SESSION" >> apps/proxy/.env.local
+echo "INTERNAL_WEBHOOK_SECRET=$SECRET_WEBHOOK" >> apps/proxy/.env.local
+echo "SESSION_SIGNING_SECRET=$SECRET_SESSION" >> apps/runtime-broker/.env.local
+echo "INTERNAL_WEBHOOK_SECRET=$SECRET_WEBHOOK" >> apps/runtime-broker/.env.local
+```
+
+Then open `apps/proxy/.env.local` and add `ANTHROPIC_API_KEY=...` +
+`DATABASE_URL=...` manually.
 
 ### 6. Start all services
 

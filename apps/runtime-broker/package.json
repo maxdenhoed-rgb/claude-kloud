@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc --project tsconfig.json",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsx watch --env-file-if-exists=.env.local src/server.ts",
     "start": "node dist/server.js",
     "lint": "eslint src",
     "test": "vitest run"
