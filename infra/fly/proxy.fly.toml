@@ -1,0 +1,123 @@
+# proxy.fly.toml — Fly app config for the ClaudeKloud API proxy
+#
+# The proxy is a small Hono service that:
+#   - Authenticates session-scoped keys issued to lab containers
+#   - Enforces per-session token quotas
+#   - Logs every Claude API request/response to Postgres (proxy_call_log)
+#   - Forwards allowlisted model requests to api.anthropic.com
+#   - Exposes /internal/* endpoints accessible ONLY via the Fly private network
+#
+# Two-listener model (L-3 security fix):
+#   PUBLIC_PORT=8080  — exposed publicly via [http_service]; serves /healthz,
+#                       /readyz, /v1/*
+#   INTERNAL_PORT=8081 — private-only via [[services]] (Flycast, no public IPs);
+#                        serves /internal/*. The broker and CI MUST call the
+#                        proxy at https://<app>.internal:8081, NOT the public
+#                        hostname. DevOps: update PROXY_INTERNAL_URL to
+#                        http://claudekloud-proxy.internal:8081 in GitHub
+#                        Actions secrets and the broker config once the Fly app
+#                        exists. To enable Flycast, run:
+#                          fly ips allocate-v6 --private --app claudekloud-proxy
+#
+# Environment variable contract (set via `fly secrets set` — never in this file):
+#
+#   ANTHROPIC_MASTER_KEY     — Anthropic API key used to forward requests
+#   DATABASE_URL             — Postgres connection string (Neon)
+#   SESSION_SIGNING_SECRET   — HMAC secret for signing session-scoped proxy keys
+#   INTERNAL_WEBHOOK_SECRET  — Shared secret for /internal/* calls from CI
+#   SENTRY_DSN               — (optional) Sentry DSN for error tracking
+#   AXIOM_TOKEN              — (optional) Axiom ingest token for structured logs
+#   AXIOM_DATASET            — (optional) Axiom dataset name
+#
+# Non-secret config lives below as [env] entries.
+
+app = "claudekloud-proxy"
+primary_region = "ams"
+
+[build]
+  # The proxy image is built by the monorepo CI, not by flyctl.
+  # `fly deploy` is called with --image to supply the prebuilt digest.
+  image = "ghcr.io/org/claudekloud/proxy:latest"
+
+[env]
+  PUBLIC_PORT = "8080"
+  INTERNAL_PORT = "8081"
+  NODE_ENV = "production"
+  LOG_LEVEL = "info"
+  # Allowlisted models — must match the critical rule in CLAUDE.md.
+  ALLOWED_MODELS = "claude-sonnet-4-7,claude-opus-4-7,claude-haiku-4-5"
+  # Upstream endpoint the proxy forwards to.
+  ANTHROPIC_API_URL = "https://api.anthropic.com"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "15s"
+  method = "GET"
+  path = "/healthz"
+  port = 8080
+  timeout = "5s"
+
+  # /healthz must return: { "ok": true, "data": { "status": "healthy" } }
+  # A non-2xx response or a body with ok:false takes the machine out of rotation.
+
+[machine_checks]
+  # Fly will check this path before routing traffic to a newly started machine.
+  [[machine_checks.checks]]
+    name = "proxy-ready"
+    type = "http"
+    port = 8080
+    method = "GET"
+    path = "/healthz"
+    interval = "10s"
+    timeout = "5s"
+    grace_period = "15s"
+
+[[vm]]
+  # shared-cpu-1x: 1 shared vCPU, 256 MB RAM.
+  # Autoscale to 4 replicas under load; never drop below 1.
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  processes = ["app"]
+
+[deploy]
+  strategy = "rolling"
+  max_unavailable = 0
+
+# Autoscaling: Fly Machines autoscale by starting/stopping additional machines
+# when the concurrency soft_limit is exceeded.  min_machines_running=1 ensures
+# one machine is always warm.  Fly will start additional machines (up to the
+# count you've provisioned) when soft_limit is breached.
+#
+# To provision 4 machines: fly scale count 4 --app claudekloud-proxy
+
+# Private internal listener (Flycast / 6PN only — no public IP).
+# /internal/* routes are ONLY reachable via Fly's private network at:
+#   http://claudekloud-proxy.internal:8081
+#
+# This service has no [[services.ports]] entries, meaning Fly Proxy will NOT
+# allocate a public anycast IP for it.  Access requires a private (Flycast)
+# IPv6, provisioned once with:
+#   fly ips allocate-v6 --private --app claudekloud-proxy
+#
+# Flycast does not support HTTPS termination; traffic travels over the
+# WireGuard-encrypted 6PN mesh, so plaintext HTTP is acceptable here.
+[[services]]
+  internal_port = 8081
+  protocol = "tcp"
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
