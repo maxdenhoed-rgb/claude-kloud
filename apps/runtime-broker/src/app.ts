@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { cors } from 'hono/cors';
 import { logger as honoLogger } from 'hono/logger';
 
 import { err } from './lib/response.js';
@@ -12,6 +13,20 @@ export function createApp(): Hono {
   const app = new Hono();
 
   app.use('*', honoLogger());
+
+  // CORS — the demo web UI runs on http://localhost:3000 and the broker on
+  // :3001, so the browser issues a preflight OPTIONS before each POST/DELETE.
+  // Allow only the local web origins; broker is bound to 127.0.0.1 so this
+  // surface is unreachable beyond the same machine regardless.
+  app.use(
+    '*',
+    cors({
+      origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+      allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
+      allowHeaders: ['content-type'],
+      maxAge: 600,
+    }),
+  );
 
   app.route('/', createSessionsRouter());
 
