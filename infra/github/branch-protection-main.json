@@ -1,0 +1,25 @@
+{
+  "_note_solo_founder": "Solo-founder relaxation: require_code_owner_reviews=false and dismiss_stale_reviews=true, but require_last_push_approval is OMITTED (not enforced) so the bot's --approve counts. Sunset condition per CONTRIBUTING.md: when a second engineer commits to main, set require_last_push_approval=true and require_code_owner_reviews=true.",
+  "_note_deferred_check": "The 'claude pr-reviewer' check is intentionally NOT in required_status_checks.contexts because it has not yet produced a check-run on the repo. Add it via the gh api PATCH documented in CONTRIBUTING.md after the first PR run that exercises claude-review.yml.",
+  "_note_apply_command": "gh api -X PUT /repos/maxdenhoed-rgb/claude-kloud/branches/main/protection --input infra/github/branch-protection-main.json",
+  "required_status_checks": {
+    "strict": true,
+    "contexts": ["typecheck / lint / build / test"]
+  },
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false,
+    "required_approving_review_count": 1,
+    "require_last_push_approval": false
+  },
+  "restrictions": null,
+  "required_linear_history": false,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "block_creations": false,
+  "required_conversation_resolution": true,
+  "lock_branch": false,
+  "allow_fork_syncing": false,
+  "required_signatures": false
+}

@@ -43,7 +43,33 @@ Both relaxations sunset automatically the day a second engineer commits to `main
 
 ## Auto-merge
 
-`main` is the only long-lived branch. PRs merge via `gh pr merge --auto --squash --delete-branch`, which queues the squash-merge to fire as soon as required checks pass and the required approval lands. Branch protection on `main` (see `.github/branch-protection.json` once added) requires `pr-validation` and `claude-review` to be green plus 1 approving review; the `claude pr-reviewer` approval counts during the solo-founder phase.
+`main` is the only long-lived branch. PRs merge via `gh pr merge --auto --squash --delete-branch`, which queues the squash-merge to fire as soon as required checks pass and the required approval lands. Branch protection on `main` (canonical JSON in `infra/github/branch-protection-main.json`) currently requires the `typecheck / lint / build / test` check (from `pr-validation.yml`) plus 1 approving review. The `claude pr-reviewer` approval counts during the solo-founder phase.
+
+### Re-applying branch protection from JSON
+
+The JSON file is the source of truth. If the rules drift, re-apply with:
+
+```sh
+gh api -X PUT /repos/maxdenhoed-rgb/claude-kloud/branches/main/protection \
+  --input infra/github/branch-protection-main.json
+```
+
+### Adding `claude pr-reviewer` to required checks (deferred)
+
+The `claude-review.yml` workflow has not yet produced a check-run on the repo, so the check name `claude pr-reviewer` does not exist in GitHub's status-check namespace yet. After the first PR runs claude-review and the check appears (verify with `gh api /repos/maxdenhoed-rgb/claude-kloud/commits/<sha>/check-runs`), add it to the required checks list:
+
+```sh
+gh api -X PATCH /repos/maxdenhoed-rgb/claude-kloud/branches/main/protection/required_status_checks \
+  --field 'strict=true' \
+  --field 'contexts[]=typecheck / lint / build / test' \
+  --field 'contexts[]=claude pr-reviewer'
+```
+
+Then update `infra/github/branch-protection-main.json` to add `"claude pr-reviewer"` to the `contexts` array so the file stays canonical.
+
+### Solo-founder branch-protection sunset
+
+`require_last_push_approval` is `false` and `require_code_owner_reviews` is `false` so the `claude pr-reviewer` bot can approve the author's own PRs. When a second engineer commits to `main`, flip both to `true` and re-apply the JSON.
 
 ## Local dev
 
