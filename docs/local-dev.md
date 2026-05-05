@@ -26,11 +26,21 @@ pnpm install
 ### 3. Apply the schema
 
 ```sh
-pnpm --filter @claudekloud/db db:push
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/claudekloud \
+  pnpm --filter @claudekloud/db db:push
 ```
 
-Pushes the Drizzle schema to the local Postgres instance. Run this again after
-any schema change.
+`drizzle-kit` reads `DATABASE_URL` from the shell environment, not from any
+`.env` file — set it inline (or `export` it in your shell). The command is
+interactive and prints the schema diff before applying; type `y` and Enter to
+confirm. Run this again after any schema change.
+
+To run noninteractively (e.g. from a script), pass `--force`:
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/claudekloud \
+  pnpm --filter @claudekloud/db exec drizzle-kit push --force
+```
 
 ### 4. Build the lab image
 
