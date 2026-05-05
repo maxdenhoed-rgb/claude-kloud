@@ -41,6 +41,10 @@ Until a second engineer commits to `main`, two requirements relax:
 
 Both relaxations sunset automatically the day a second engineer commits to `main`. At that point, branch protection requires a reviewer and the prod environment requires a second approver.
 
+## Auto-merge
+
+`main` is the only long-lived branch. PRs merge via `gh pr merge --auto --squash --delete-branch`, which queues the squash-merge to fire as soon as required checks pass and the required approval lands. Branch protection on `main` (see `.github/branch-protection.json` once added) requires `pr-validation` and `claude-review` to be green plus 1 approving review; the `claude pr-reviewer` approval counts during the solo-founder phase.
+
 ## Local dev
 
 ```sh

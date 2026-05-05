@@ -74,6 +74,7 @@ The structure below is what the monorepo grows into as the build order in `adrs/
 - **Tests**: every PR runs the per-lab solution-validation suite. PR cannot merge if any lab's reference solution fails its own validator.
 - **Secrets**: never in `.env` committed to git. Local `.env.local` (gitignored). Production via Fly secrets / Vercel env vars.
 - **API responses**: `{ ok: true, data }` or `{ ok: false, error: { code, message } }`. No exceptions.
+- **PR merge**: PRs auto-merge once `pr-validation` (`typecheck / lint / build / test`) and `claude-review` (`claude pr-reviewer`) pass plus 1 approval. During the solo-founder phase, the `claude pr-reviewer` approval counts toward the 1-approval requirement.
 
 ## Critical rules (never break)
 
