@@ -1,0 +1,27 @@
+# docker-compose.yml — local development services for ClaudeKloud
+# Managed via root package.json scripts: db:up / db:down
+# Not used in production (Fly.io manages the runtime there).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: claudekloud-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: claudekloud
+    ports:
+      - '5432:5432'
+    volumes:
+      - claudekloud_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d claudekloud']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  claudekloud_pgdata:
+    name: claudekloud_pgdata

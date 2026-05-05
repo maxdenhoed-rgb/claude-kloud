@@ -1,0 +1,4 @@
+# Python dependencies for the ClaudeKloud lab container image.
+# Pin exact versions here. The sdk-watcher CI workflow opens a PR to bump
+# the anthropic package when a new release is detected on PyPI.
+anthropic==0.98.1
