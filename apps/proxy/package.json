@@ -1,0 +1,35 @@
+{
+  "name": "@claudekloud/proxy",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Hono proxy that brokers Claude API calls behind session tokens",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/server.js",
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "lint": "eslint src",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@claudekloud/db": "workspace:*",
+    "@claudekloud/session-token": "workspace:*",
+    "@hono/node-server": "1.13.7",
+    "@hono/zod-validator": "0.4.3",
+    "drizzle-orm": "0.38.3",
+    "hono": "4.6.20",
+    "pino": "9.5.0",
+    "zod": "3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "jose": "5.10.0",
+    "msw": "2.6.6",
+    "tsx": "4.19.2",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
+  }
+}

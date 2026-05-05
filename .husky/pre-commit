@@ -1,5 +1,7 @@
 # Reject any staged .env* file other than .env.example. Per REQ-12.6.
-staged_env_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env($|\.)' | grep -v '^\.env\.example$' || true)
+# The exclusion uses a path-aware pattern so that .env.example files in
+# subdirectories (e.g. apps/proxy/.env.example) are also allowed.
+staged_env_files=$(git diff --cached --name-only --diff-filter=ACM | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$' || true)
 if [ -n "$staged_env_files" ]; then
   echo "Refusing commit: env files other than .env.example are staged:"
   echo "$staged_env_files"

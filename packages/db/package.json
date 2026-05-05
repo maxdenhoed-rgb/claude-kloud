@@ -1,0 +1,35 @@
+{
+  "name": "@claudekloud/db",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Drizzle ORM schema and migrations for ClaudeKloud",
+  "license": "UNLICENSED",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "typecheck": "tsc --project tsconfig.json --noEmit",
+    "lint": "eslint src",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "drizzle-orm": "0.38.3",
+    "postgres": "3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "drizzle-kit": "0.30.4",
+    "typescript": "5.7.3",
+    "vitest": "2.1.8"
+  }
+}
