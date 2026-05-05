@@ -1,6 +1,7 @@
 // Flat config root. A single shared config until there's a second app or package.
 // Per REQ-6.2: @typescript-eslint, eslint-plugin-react, eslint-plugin-react-hooks, eslint-plugin-import.
 import js from '@eslint/js';
+import nextPlugin from '@next/eslint-plugin-next';
 import importPlugin from 'eslint-plugin-import';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
@@ -57,6 +58,14 @@ export default [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+    },
+  },
+  {
+    files: ['apps/web/**/*.{ts,tsx,js,jsx}'],
+    plugins: { '@next/next': nextPlugin },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs['core-web-vitals'].rules,
     },
   },
 ];

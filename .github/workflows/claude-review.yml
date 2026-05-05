@@ -33,7 +33,11 @@ jobs:
       - name: Run Claude pr-reviewer
         uses: anthropics/claude-code-action@v1
         with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Auth: prefer Claude Pro/Max subscription via OAuth token (no per-call API billing).
+          # Generate locally with `claude setup-token` and store as CLAUDE_CODE_OAUTH_TOKEN secret.
+          # If you'd rather pay per-call from a console.anthropic.com key, swap to
+          # `anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}` instead.
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           track_progress: true
           prompt: |
             REPO: ${{ github.repository }}
