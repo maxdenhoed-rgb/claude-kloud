@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+
+/* Tailwind v4 inline theme. Single accent color used on CTA only. */
+@theme {
+  --color-bg: #0e0e0e;
+  --color-bg-elevated: #161616;
+  --color-border: #262626;
+  --color-text: #ededed;
+  --color-text-muted: #b3b3b3;
+  --color-text-subtle: #8a8a8a;
+  --color-accent: #d97757;
+  --color-accent-hover: #c46546;
+  --color-accent-fg: #0e0e0e;
+  --color-status-pass: #2d6a4f;
+  --color-status-warn: #b7791f;
+  --color-status-fail: #9b2c2c;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'JetBrains Mono', 'IBM Plex Mono', Menlo, Monaco, Consolas,
+    'Liberation Mono', monospace;
+}
+
+html,
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Visible focus ring everywhere, AA contrast. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-fg);
+}

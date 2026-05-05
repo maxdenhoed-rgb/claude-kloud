@@ -1,0 +1,58 @@
+# Auto-runs the pr-reviewer subagent (.claude/agents/pr-reviewer.md) on every PR.
+# Posts a GitHub Review (approve / request-changes). Branch protection on `main`
+# is configured to require this check + an approving review before merge, so
+# auto-merge will fire once Claude approves and the other required checks pass.
+name: claude-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  review:
+    name: claude pr-reviewer
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude pr-reviewer
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR_NUMBER: ${{ github.event.pull_request.number }}
+            PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+            Use the `pr-reviewer` subagent (defined at .claude/agents/pr-reviewer.md)
+            to review this pull request end-to-end.
+
+            The subagent's spec is canonical — follow it. Do not duplicate its logic
+            here; just delegate via the Task tool with subagent_type="pr-reviewer".
+
+            The PR head is checked out at the current working directory. The subagent
+            will read CLAUDE.md and the ADRs as part of its process.
+
+            Post inline comments for code-specific findings. Post the verdict as a
+            GitHub Review using `gh pr review --approve` or `gh pr review --request-changes`.
+            Never use `gh pr review --comment` for the verdict — branch protection's
+            required-review check only counts approve / request-changes events.
+
+          claude_args: |
+            --allowedTools "Task,Read,Grep,Glob,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr review:*),Bash(gh pr comment:*),Bash(gh api:*),mcp__github_inline_comment__create_inline_comment"
